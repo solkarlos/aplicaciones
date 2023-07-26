@@ -1,14 +1,11 @@
 package com.solabre.aplicacionesAccesoWeb;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.IOException;
 
-import javax.swing.JOptionPane;
-
-import org.apache.commons.codec.binary.Base64;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 /**
  * Hello world!
@@ -16,25 +13,19 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class App {
 	public static void main(String[] args) {
-		try {
-			URL url = new URL("https://www.geocaching.com/account/join");
-			byte[] encodedBytes = Base64.encodeBase64("username:password".getBytes());
-			System.out.println("encodedBytes " + new String(encodedBytes));
-			String encoding = new String(encodedBytes);
 
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("POST");
-			connection.setDoOutput(true);
-			connection.setRequestProperty("Authorization", "Basic " + encoding);
-			InputStream content = (InputStream) connection.getInputStream();
-			BufferedReader in = new BufferedReader(new InputStreamReader(content));
-			String line;
-			while ((line = in.readLine()) != null) {
-				System.out.println(line);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		String url = "https://www.geocaching.com/my/statistics.aspx";
+
+		try {
+			Connection.Response loginForm = Jsoup.connect(url).method(Connection.Method.GET).execute();
+
+			// POST login data
+			Document doc = Jsoup.connect(url).cookies(loginForm.cookies()).timeout(100000).post();
+			System.out.println(doc.baseUri());
+			Element e = doc.getElementById("CybotCookiebotDialogBodyUnderlay");
+			System.out.println(e.toString());
+		} catch (IOException ex) {
+			System.out.println("Excepción al obtener el Status Code: " + ex.getMessage());
 		}
-		JOptionPane.showMessageDialog(null, "Operación realizada correctamente");
 	}
 }
